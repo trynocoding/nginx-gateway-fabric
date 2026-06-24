@@ -18,32 +18,36 @@ related: "[[ngf-official-deploy-demo-obsidian]]"
 
 ## 0. 全景：两个 Pod，一条控制链路
 
-NGF 在$k8s$集群里运行的是**两个完全独立**的 Pod，它们通过 **gRPC over mTLS** 通信：
+NGF 在 Kubernetes 集群里运行的是**两个完全独立**的 Pod，它们通过 **gRPC over mTLS** 通信：
 
 ```mermaid
-flowchart LR
-    subgraph CP["控制面 Pod<br/>ngf-nginx-gateway-fabric (nginx-gateway namespace)"]
-        direction TB
-        GatewayBinary["/usr/bin/gateway controller<br/>Go 二进制"]
-        GRPCServer["gRPC server :8443<br/>agent-grpc"]
-        ControllerRuntime["controller-runtime manager<br/>watch / eventLoop / provisioner"]
+flowchart TD
+    K8sAPI["Kubernetes API"]
+
+    subgraph CP["控制面 Pod - ngf-nginx-gateway-fabric (nginx-gateway ns)"]
+        GatewayBinary["/usr/bin/gateway controller"]
+        ControllerRuntime["controller-runtime manager\nwatch / eventLoop / provisioner"]
+        GRPCServer["gRPC server :8443"]
+        GatewayBinary --> ControllerRuntime --> GRPCServer
     end
-    subgraph DP["数据面 Pod<br/>gateway-nginx (default namespace)"]
-        direction TB
-        Init["init container<br/>/usr/bin/gateway initialize"]
-        Nginx["nginx master<br/>/usr/sbin/nginx -g 'daemon off;'"]
-        Agent["nginx-agent<br/>v3.11.1"]
-        NginxConf["/etc/nginx/conf.d/http.conf<br/>等配置文件"]
+
+    subgraph DP["数据面 Pod - gateway-nginx (default ns)"]
+        Init["init container\ngateway initialize"]
+        Nginx["nginx master\nnginx -g daemon off"]
+        Agent["nginx-agent v3.11.1"]
+        NginxConf["/etc/nginx/conf.d/http.conf"]
+        Init --> Nginx
+        Init --> Agent
+        Agent --> NginxConf --> Nginx
     end
-    K8sAPI["Kubernetes API"] --> ControllerRuntime
-    ControllerRuntime -->|provisioner 创建| DP
-    Init --> Nginx
-    Init --> Agent
-    Agent -->|gRPC + mTLS :443| GRPCServer
-    GRPCServer -->|GetFile 下发配置| Agent
-    Agent --> NginxConf
-    NginxConf --> Nginx
-    Client["curl :8080"] -->|NodePort 31437| Nginx
+
+    Client["curl :8080"]
+
+    K8sAPI --> ControllerRuntime
+    ControllerRuntime -. "provisioner 创建\nDeployment/Service/ConfigMap/Secret" .-> DP
+    Agent -->|"gRPC + mTLS\nngf-..svc:443"| GRPCServer
+    GRPCServer -->|"GetFile 下发配置"| Agent
+    Client -->|"NodePort 31437"| Nginx
 ```
 
 核心要点：
@@ -208,7 +212,7 @@ sequenceDiagram
         Agent->>CP: GetFile(path)
         CP-->>Agent: 文件内容
         Agent->>DP: 写 /etc/nginx/conf.d/*.conf
-        Agent->>DP: nginx -t && reload
+        Agent->>DP: "nginx -t, then reload"
     end
 ```
 
@@ -218,7 +222,7 @@ sequenceDiagram
 
 ### 2.1 构建 controller-runtime manager
 `createManager`（`internal/controller/manager.go:509`）：
-- `LeaderElection=true`、`LeaderElectionID=ngf-nginx-gateway-fabric-leader-election`，保$\mathbf{证}$多副本只有一个能写状态。
+- `LeaderElection=true`、`LeaderElectionID=ngf-nginx-gateway-fabric-leader-election`，保证多副本只有一个能写状态。
 - `HealthProbeBindAddress=:8081`，注册 `readyz` 探针（由 `graphBuiltHealthChecker` 决定 ready）。
 - 给 `Pod` 加 `status.podIP` field index，用于 agent 接入时按 IP 反查 Pod 身份（防止伪造连接）。
 
@@ -362,7 +366,7 @@ spec:
 env：
 ```yaml
 - {name: POD_UID,    valueFrom: {fieldRef: {fieldPath: metadata.uid}}}
-- {name: CLUSTER_UID, value: 55d0f802-6c05-4c70-887a-775ccaf119f5}   # 控制$k8s$面算出来下发
+- {name: CLUSTER_UID, value: 55d0f802-6c05-4c70-887a-775ccaf119f5}   # 控制面算出来下发
 ```
 
 源码 `cmd/gateway/commands.go:834` 的 `createInitializeCommand` 把 `--source/--destination` 成对收进 `[]fileToCopy`，再调用 `initialize`（`cmd/gateway/initialize.go:34`）：
