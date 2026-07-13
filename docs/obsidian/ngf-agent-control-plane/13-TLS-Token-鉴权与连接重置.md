@@ -100,6 +100,9 @@ NGF 的 gRPC server 在业务 service 之前会执行鉴权逻辑。业务代码
 
 如果鉴权失败，请求不会进入业务 handler。
 
+> [!warning] 当前版本不再按连接源 IP 查询 Pod
+> 当前 interceptor 通过 `TokenReview` 校验 token，再按 token 中的 ServiceAccount namespace/name 查询具有对应 app label 的 Pod，并要求至少存在一个 Running Pod。它不再从 gRPC peer 提取 IP，也不再使用 `status.podIP` 字段索引。历史原因及 controller-runtime 索引机制详见 [[20-PodIP字段索引与controller-runtime缓存机制]]。
+
 ## TLS 文件热更新与 resetConnChan
 
 `createAgentServices` 中创建：
@@ -151,4 +154,4 @@ kubectl logs -n nginx-gateway deploy/ngf-nginx-gateway-fabric | rg 'TLS|token|Un
 
 - [[07-连接建立-CreateConnection全链路]]
 - [[08-订阅长流-Subscribe与配置下发]]
-
+- [[20-PodIP字段索引与controller-runtime缓存机制]]
