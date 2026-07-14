@@ -30,6 +30,8 @@ GOLANGCI_LINT_VERSION = v2.12.2
 KIND_K8S_VERSION = v1.35.1
 # renovate: datasource=github-tags depName=norwoodj/helm-docs
 HELM_DOCS_VERSION = v1.14.2
+# renovate: datasource=github-tags depName=go-delve/delve
+DLV_VERSION = v1.27.0
 # renovate: datasource=github-tags depName=ahmetb/gen-crd-api-reference-docs
 GEN_CRD_API_REFERENCE_DOCS_VERSION = v0.3.0
 # renovate: datasource=go depName=sigs.k8s.io/controller-tools
@@ -53,6 +55,7 @@ TARGET ?= local## The target of the build. Possible values: local and container
 OUT_DIR ?= build/out## The folder where the binary will be stored
 GOARCH ?= amd64## The architecture of the image and/or binary. For example: amd64 or arm64
 GOOS ?= linux## The OS of the image and/or binary. For example: linux or darwin
+GOPROXY ?= $(shell go env GOPROXY 2>/dev/null || echo https://proxy.golang.org,direct)## The Go module proxy used to build the Delve image
 PLUS_ENABLED ?= false
 PLUS_LICENSE_FILE ?= $(SELF_DIR)license.jwt
 REGISTRY_JWT_FILE ?= $(SELF_DIR)dockerconfig.jwt## Path to the JWT file for the NGINX private registry
@@ -321,7 +324,10 @@ debug-build: build ## Build binary with debug info, symbols, and no optimization
 
 .PHONY: debug-build-dlv-image
 debug-build-dlv-image: check-for-docker ## Build the dlv debugger image.
-	docker build --platform linux/$(GOARCH) -f debug/Dockerfile -t dlv-debug:edge .
+	docker build --platform linux/$(GOARCH) \
+		--build-arg DLV_VERSION=$(DLV_VERSION) \
+		--build-arg GOPROXY=$(GOPROXY) \
+		-f debug/Dockerfile -t dlv-debug:edge .
 
 .PHONY: debug-build-images
 debug-build-images: debug-build build-ngf-image build-nginx-image debug-build-dlv-image ## Build all images used in debugging.

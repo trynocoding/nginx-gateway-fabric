@@ -38,6 +38,12 @@ using your IDE.
     make GOARCH=$GOARCH debug-install-local-build
     ```
 
+    The build uses the Go module proxy configured by `go env GOPROXY`. If necessary, override it explicitly:
+
+    ```console
+    make GOARCH=$GOARCH GOPROXY=https://your-go-module-proxy.example,direct debug-install-local-build
+    ```
+
   - **For NGINX Plus:**
 
     ```console

@@ -3,7 +3,12 @@
 # on how to use it.
 FROM golang:1.26-alpine AS builder
 
-RUN go install github.com/go-delve/delve/cmd/dlv@latest
+ARG DLV_VERSION=v1.27.0
+ARG GOPROXY=https://proxy.golang.org,direct
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOPROXY="${GOPROXY}" go install "github.com/go-delve/delve/cmd/dlv@${DLV_VERSION}"
 
 FROM alpine:latest
 
