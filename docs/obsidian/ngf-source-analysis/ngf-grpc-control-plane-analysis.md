@@ -19,6 +19,8 @@ related:
   - "[[nginx-agent-startup-and-control-plane-analysis]]"
 ---
 
+# NGF 控制面 gRPC Server 工作原理分析
+
 > [!abstract] 核心结论
 > NGF 控制面内置了一个专门面向 nginx-agent 的 gRPC server。它监听容器端口 `8443`，由 Service `ngf-nginx-gateway-fabric.nginx-gateway.svc:443` 暴露给数据面。连接建立时先通过 mTLS 校验证书，再通过 gRPC metadata 中的 `authorization` token 调 Kubernetes `TokenReview` 校验数据面 ServiceAccount；业务上注册 `CommandService` 和 `FileService` 两个 MPI 服务：前者维护 agent 到控制面的长连接订阅并下发 `ConfigApplyRequest`，后者在 agent 按文件 hash 拉取配置内容时返回文件。
 

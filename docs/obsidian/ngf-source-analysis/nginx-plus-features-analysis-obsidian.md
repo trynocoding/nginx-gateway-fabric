@@ -1114,8 +1114,8 @@ NGF 的 Plus 实现遵循 **"商业模块 + 控制平面集成 + 数据面模板
 
 ### 相关文档
 - `docs/proposals/nap-waf.md` — WAF 设计提案（详细设计文档）
-- `docs/ngf-control-plane-architecture-obsidian.md` — 控制平面架构分析
-- `docs/ngf-pod-startup-analysis-obsidian.md` — Pod 启动流程分析
+- `docs/obsidian/ngf-source-analysis/ngf-control-plane-architecture-obsidian.md` — 控制平面架构分析
+- `docs/obsidian/ngf-source-analysis/ngf-pod-startup-analysis-obsidian.md` — Pod 启动流程分析
 
 ---
 
