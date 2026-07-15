@@ -730,11 +730,11 @@ sequenceDiagram
 
     EH->>D: FileLock.Lock
     EH->>UP: UpdateConfig
-    UP->>D: SetFiles -> configVersion v43
+    UP->>D: SetFiles, configVersion becomes v43
     UP->>B: Send(v43)
-    B->>B: snapshot {sub-A, sub-B}
+    B->>B: snapshot listeners sub-A and sub-B
     par Pod A path
-        B->>SA: listenChA <- v43
+        B->>SA: publish v43 through listenChA
         SA->>A: ConfigApplyRequest v43
         A->>FS: GetFile for v43
         FS->>D: GetFile from locked snapshot
@@ -742,7 +742,7 @@ sequenceDiagram
         SA->>D: podStatuses[A] = nil
         SA-->>B: responseChA
     and Pod B path
-        B->>SB: listenChB <- v43
+        B->>SB: publish v43 through listenChB
         SB->>P: ConfigApplyRequest v43
         P->>FS: GetFile for v43
         FS->>D: GetFile from locked snapshot
@@ -751,8 +751,8 @@ sequenceDiagram
         SB-->>B: responseChB
     end
     B->>B: WaitGroup complete
-    B-->>UP: doneCh; Send returns
-    UP->>D: GetConfigurationStatus -> nil
+    B-->>UP: doneCh signals Send completion
+    UP->>D: GetConfigurationStatus returns nil
     UP->>D: SetLatestConfigError(nil)
     UP-->>EH: UpdateConfig returns
     EH->>D: FileLock.Unlock
