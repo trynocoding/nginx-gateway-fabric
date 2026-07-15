@@ -10,3 +10,4 @@ _Please note: You can find the user documentation for NGINX Gateway Fabric in th
 - [Proposals](proposals/): Enhancement proposals for new features.
 - [API](api/): The files for generating API documentation, used in the Makefile
 - [NGF latest release deployment](obsidian/ngf-deployment-labs/ngf-latest-release-deployment-obsidian.md): Obsidian-style notes for deploying the latest stable NGF release.
+- [Go 1.26 through NGF source](obsidian/ngf-go-tutorial/00-首页-学习路线.md): A 65-chapter Chinese Obsidian tutorial covering Go language, concurrency, testing, and controller engineering with NGF production-code evidence.
