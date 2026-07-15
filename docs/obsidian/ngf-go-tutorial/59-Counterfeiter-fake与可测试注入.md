@@ -1,12 +1,8 @@
 ---
 title: "59 Counterfeiter、fake 与可测试依赖注入"
-tags:
-  - nginx-gateway-fabric
-  - go-1-26
-  - source-analysis
-  - tutorial
+tags: [nginx-gateway-fabric, go-1-26, tutorial]
 status: complete
-note_type: tutorial
+note_type: syntax-tutorial
 go_version: "1.26.0"
 repo_revision: "df175d68064b54c369b6cb2a6c83c8c1b2ab26ca"
 sources:
@@ -17,43 +13,32 @@ sources:
 
 # 59 Counterfeiter、fake 与可测试依赖注入
 
-> [!abstract] 本章唯一知识点
-> 生成 fake 记录调用、参数和返回值；它依赖先有窄接口和构造注入，不能替代良好边界。
+## 语法
 
-## 前置与完成标准
+生成 fake 记录调用、参数和返回值；它依赖先有窄接口和构造注入，不能替代良好边界。
 
-前置：[[58-Ginkgo-Gomega行为测试]]。学完应能解释“Counterfeiter、fake 与可测试依赖注入”，并在 NGF 中定位 `Messenger counterfeiter directive`，说清调用效果与适用边界。本章只做源码导读，片段不承诺可独立运行。
+**说明性片段：**
 
-## 最小模型
+```go
+//counterfeiter:generate . Reader
 
-阅读时先判断类型、所有权和生命周期由谁规定，再读语法；这样能把记忆中的写法重新连回工程约束。
+type Reader interface {
+	Get(context.Context, string) ([]byte, error)
+}
+```
 
-## NGF 生产代码证据
+## NGF 中的应用
 
-**internal/controller/nginx/agent/grpc/messenger/messenger.go · Messenger counterfeiter directive（原样摘录）**
+位置：`ngf:internal/controller/nginx/agent/grpc/messenger/messenger.go:Messenger counterfeiter directive`
+
+**原样源码：**
 
 ```go
 //counterfeiter:generate . Messenger
 ```
 
-- 定义：`ngf:internal/controller/nginx/agent/grpc/messenger/messenger.go:Messenger counterfeiter directive`
-- 精简链路：业务依赖 Messenger → Counterfeiter 生成 FakeMessenger → 测试配置返回 channel/error 并断言调用。
-- 测试佐证：`internal/controller/nginx/agent/grpc/messenger/messengerfakes/fake_messenger.go`
-- 证据范围：源码事实固定于 `df175d68`；测试文件用于确认行为边界，不把框架推断写成项目事实。
+业务依赖 Messenger → Counterfeiter 生成 FakeMessenger → 测试配置返回 channel/error 并断言调用。
 
-## 工程取舍与边界
+## 相关测试
 
-生成物负责机械调用记录，手写测试只表达场景。
-
-> [!warning] 常见误解与迁移边界
-> 可复用项目既有生成流程；不要编辑 fake 文件或为内部实现细节造巨型接口。误解是 fake 会模拟真实网络时序。
-
-复用判定：明确可复用的做法可直接采用；带条件的做法必须先满足相同输入、所有权与失败语义；指出不要或不可的部分不应照搬。
-
-## 心智模型与下一步
-
-一句话心智模型：**Counterfeiter、fake 与可测试依赖注入不是孤立语法，而是 `Messenger counterfeiter directive` 所在边界用来表达约束的工具。**
-
-上一章：[[58-Ginkgo-Gomega行为测试]] · 下一章：[[60-controller-runtime-Reconciler契约]]
-
-延伸阅读：docs/developer/testing.md
+`internal/controller/nginx/agent/grpc/messenger/messengerfakes/fake_messenger.go`
