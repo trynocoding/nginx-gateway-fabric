@@ -203,3 +203,5 @@ receive loop
 
 `Subscribe` 消息里通常只带文件摘要。Agent 要拿到真正的文件内容，需要看 [[09-文件拉取-FileService与配置文件交付]]。
 
+若要继续深挖 `broadcast.go` 的 listener 快照、fan-out、完成屏障、取消与锁不变量，参见
+[[22-DeploymentBroadcaster广播器机制与全链路]]。
