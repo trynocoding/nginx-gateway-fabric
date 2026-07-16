@@ -7,6 +7,7 @@ tags:
 status: complete
 note_type: source-file-analysis
 created: 2026-07-14
+updated: 2026-07-16
 sources:
   - repo: nginx-gateway-fabric
     revision: 87e0580143fc
@@ -14,9 +15,16 @@ sources:
 source_file: examples/advanced-routing/regex-route.yaml
 source_sha256_12: 3864fab33edd
 runtime_snapshots: []
+related:
+  - "[[00-Advanced-Routing专题学习路线]]"
+  - "[[03-NGINX高级路由匹配机制]]"
+  - "[[04-kind验证与排障手册]]"
 ---
 
 # examples/advanced-routing/regex-route.yaml 源码分析
+
+> [!info] 后续运行实证
+> 本文保留 2026-07-14 基于 revision `87e0580143fc` 的静态逐文件分析。该示例现已在 `kind-ngf-demo`、NGF 2.6.5、NGINX 1.31.2 中实际部署；生成的正则 `location`、与 PathPrefix 的优先级、请求结果和配置哈希见 [[00-Advanced-Routing专题学习路线|Advanced Routing 专题首页]]、[[03-NGINX高级路由匹配机制]] 与 [[04-kind验证与排障手册]]。运行实证不反向改写本文原有的证据边界。
 
 > [!abstract] 核心结论
 > 该文件声明 1 个对象（HTTPRoute）。它的核心价值不是展示 YAML 语法，而是提供一段可追踪输入：受管对象经过 Graph 验证与引用解析，普通工作负载则只通过 Service/Secret 等边界间接影响 NGF。
@@ -101,5 +109,8 @@ flowchart LR
 
 ## 关联笔记
 
-- [[00-首页-学习路线]]
-- [[99-源码索引与术语表]]
+- [[examples-source-analysis/00-首页-学习路线|NGF examples 二八源码学习路线]]
+- [[00-Advanced-Routing专题学习路线|Advanced Routing 专题首页]]
+- [[03-NGINX高级路由匹配机制]]
+- [[04-kind验证与排障手册]]
+- [[examples-source-analysis/99-源码索引与术语表|NGF examples 源码索引与术语表]]
